@@ -21,6 +21,7 @@ class Menu extends Component {
         const renderMenuItem = ({item, index}) => {
      return(
          <ListItem
+         
           key={index} 
           title={item.name}
           subtitle={item.description}
@@ -31,7 +32,7 @@ class Menu extends Component {
      )
  }
     return(
-       
+        
         <FlatList 
         data={this.state.dishes}
         renderItem={renderMenuItem}  
