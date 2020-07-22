@@ -7,11 +7,23 @@ import {Icon} from 'react-native-elements'
 import Home from './HomeComponent';
 import Contact from './ContactComponent'
 import About from './AboutComponent'
+import { connect } from 'react-redux';
+import { fetchDishes, fetchComments, fetchPromos, fetchLeaders } from '../redux/ActionCreators';
+
+const mapStateToProps = state => {
+  return {
+    dishes: state.dishes,
+    comments: state.comments,
+    promotions: state.promotions,
+    leaders: state.leaders
+  }
+}
+
 const MenuNavigator=createStackNavigator({
     Menu: {screen:Menu,
     navigationOptions:({navigation})=>({
         headerLeft:<Icon name='menu' size={24}
-        color='white' onPress={()=>navigation.toggleDrawer()}  />
+        color='white' iconStyle={{marginLeft: 10}} onPress={()=>navigation.toggleDrawer()}  />
     })},
     Dishdetail:{screen:Dishdetail}
 },
@@ -38,8 +50,8 @@ const HomeNavigator = createStackNavigator({
       headerTitleStyle: {
           color: "#fff"            
       },
-      headerTintColor: "#fff" ,
-      headerLeft:<Icon name='menu' size={24}
+      headerTintColor: "#fff" , 
+      headerLeft:<Icon name='menu' size={24} iconStyle={{marginLeft: 10}}
         color='white' onPress={()=>navigation.toggleDrawer()} /> 
     })
 });
@@ -55,7 +67,7 @@ const ContactNavigator = createStackNavigator({
           color: "#fff"            
       },
       headerTintColor: "#fff" , 
-      headerLeft:<Icon name='menu' size={24}
+      headerLeft:<Icon name='menu' iconStyle={{marginLeft: 10}} size={24}
         color='white' onPress={()=>navigation.toggleDrawer()} />
     })
 });
@@ -70,7 +82,7 @@ const AboutNavigator = createStackNavigator({
           color: "#fff"            
       },
       headerTintColor: "#fff" ,
-      headerLeft:<Icon name='menu' size={24}
+      headerLeft:<Icon name='menu' iconStyle={{marginLeft: 10}} size={24}
         color='white' onPress={()=>navigation.toggleDrawer()} />
     })
 });
@@ -158,12 +170,24 @@ const MainNavigator = createDrawerNavigator({
 });
 
 
+const mapDispatchToProps = dispatch => ({
+  fetchDishes: () => dispatch(fetchDishes()),
+  fetchComments: () => dispatch(fetchComments()),
+  fetchPromos: () => dispatch(fetchPromos()),
+  fetchLeaders: () => dispatch(fetchLeaders()),
+})
+
 class Main extends Component{
-    
+  componentDidMount() {
+    this.props.fetchDishes();
+    this.props.fetchComments();
+    this.props.fetchPromos();
+    this.props.fetchLeaders();
+  }
     render(){
         return(
 
-            <View style={{flex:1}}>
+        <View style={{flex:1}}>
             <MainNavigator />
         </View>
         )
@@ -198,4 +222,4 @@ const styles = StyleSheet.create({
     }
   });
 
-export default Main;
+  export default connect(mapStateToProps, mapDispatchToProps)(Main);
