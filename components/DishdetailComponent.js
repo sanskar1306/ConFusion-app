@@ -1,18 +1,11 @@
 import React, { Component } from "react";
-import {
-  Text,
-  View,
-  ScrollView,
-  FlatList,
-  Modal,
-  StyleSheet,
-  Button
-} from "react-native";
+import { Text, View, ScrollView, FlatList, Modal, StyleSheet, Button, Alert, PanResponder } from 'react-native';
 import { Card, Icon, Input } from "react-native-elements";
 import { connect } from "react-redux";
 import { baseUrl } from "../shared/baseUrl";
 import { postFavorite, postComment } from "../redux/ActionCreators";
 import { Rating } from "react-native-elements";
+import * as Animatable from 'react-native-animatable';
 
 const mapStateToProps = state => {
   return {
@@ -30,9 +23,52 @@ const mapDispatchToProps = dispatch => ({
 
 function RenderDish(props) {
   const dish = props.dish;
+  handleViewRef = ref => this.view = ref;
+  const recognizeDrag = ({ moveX, moveY, dx, dy }) => {
+    if ( dx < -200 )
+        return true;
+    else
+        return false;
+}
+ const recognizeComment=({ moveX, moveY, dx, dy }) => {
+  if ( dx > 200 )
+      return true;
+  else
+      return false;
+}
 
+const panResponder = PanResponder.create({
+    onStartShouldSetPanResponder: (e, gestureState) => {
+        return true;
+    },
+    onPanResponderEnd: (e, gestureState) => {
+        console.log("pan responder end", gestureState);
+        if (recognizeDrag(gestureState))
+            Alert.alert(
+                'Add Favorite',
+                'Are you sure you wish to add ' + dish.name + ' to favorite?',
+                [
+                {text: 'Cancel', onPress: () => console.log('Cancel Pressed'), style: 'cancel'},
+                {text: 'OK', onPress: () => {props.favorite
+                  ? console.log("Already favorite")
+                  : props.onPressFavorite()}},
+                ],
+                { cancelable: false }
+            );
+        
+            else if(recognizeComment(gestureState))
+          {
+            props.onPressAddComment();
+
+          }
+
+        return true;
+    },
+    onPanResponderGrant: () => {this.view.rubberBand(1000).then(endState => console.log(endState.finished ? 'finished' : 'cancelled'));},
+})
   if (dish != null) {
     return (
+      <Animatable.View animation="fadeInDown" duration={2000} delay={1000} ref={this.handleViewRef} {...panResponder.panHandlers}>
       <Card featuredTitle={dish.name} image={{ uri: baseUrl + dish.image }}>
         <Text style={{ margin: 10 }}>{dish.description}</Text>
         <View style={styles.icons}>
@@ -58,6 +94,7 @@ function RenderDish(props) {
           />
         </View>
       </Card>
+      </Animatable.View>
     );
   } else {
     return <View />;
@@ -86,13 +123,15 @@ function RenderComments(props) {
   };
 
   return (
-    <Card title="Comments">
-      <FlatList
-        data={comments}
-        renderItem={renderCommentItem}
-        keyExtractor={item => item.id.toString()}
-      />
-    </Card>
+    <Animatable.View animation="fadeInUp" duration={2000} delay={1000}>        
+        <Card title='Comments' >
+            <FlatList 
+                data={comments}
+                renderItem={renderCommentItem}
+                keyExtractor={item => item.id.toString()}
+                />
+        </Card>
+        </Animatable.View>
   );
 }
 
