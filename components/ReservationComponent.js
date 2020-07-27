@@ -3,6 +3,7 @@ import { ScrollView,Text, View, StyleSheet, Picker, Switch, Button, Alert} from 
 import * as Permissions from 'expo-permissions';
 import {  Notifications } from 'expo';
 import DatePicker from 'react-native-datepicker'
+import * as Calendar from 'expo-calendar';
 import * as Animatable from 'react-native-animatable';
 class Reservation extends Component {
 
@@ -47,7 +48,7 @@ class Reservation extends Component {
             {
               text: 'OK',
               // eslint-disable-next-line no-confusing-arrow, no-console
-              onPress: () => {this.resetForm(), this.presentLocalNotification(this.state.date)}
+              onPress: () => {this.resetForm(), this.presentLocalNotification(this.state.date),this.addReservationToCalendar(this.state.date)}
             },
           ],
           { cancelable: false },
@@ -78,7 +79,34 @@ class Reservation extends Component {
             }
         });
     }
+   async obtainCalendarPermission() {
+        let permission = await Permissions.getAsync(Permissions.CALENDAR);
+        if (permission.status !== 'granted') {
+          permission = await Permissions.askAsync(Permissions.CALENDAR);
+          if (permission.status !== 'granted') {
+            Alert.alert('Permission not granted to access the calendar');
+          }
+        }
+        return permission;
+      }
+  
     
+      
+    async addReservationToCalendar(date) {
+
+        const details = {
+            title : 'ConFusion Table Reservation',
+            startDate : date,
+            endDate : new Date(date + 2*60*60*1000),
+            timeZone : 'Asia/Hong_Kong',
+            location : '121, Clear Water Bay Road, Clear Water Bay, Kowloon, Hong Kong'
+        }
+
+        this.obtainCalendarPermission()
+            .then(Calendar.createEventAsync(Calendar.DEFAULT, details))
+
+
+    }
     render() {
         return(
             <Animatable.View animation="zoomIn" duration={2000}>
@@ -109,14 +137,15 @@ class Reservation extends Component {
                 <View style={styles.formRow}>
                 <Text style={styles.formLabel}>Date and Time</Text>
                 <DatePicker
-                    style={{flex: 2, marginRight: 20}}
-                    date={this.state.date}
-                    mode="datetime"
-                    format='YYYY-MM-DD HH:mm'
-                    placeholder="select date and Time"
-                    minDate="2020-07-07"
-                    confirmBtnText="Confirm"
-                    cancelBtnText="Cancel"
+        style={{width: 200}}
+        date={this.state.date}
+        mode="date"
+        placeholder="select date"
+        format="YYYY-MM-DD"
+        minDate="2020-05-01"
+       
+        confirmBtnText="Confirm"
+        cancelBtnText="Cancel"
                     customStyles={{
                     dateIcon: {
                         position: 'absolute',
